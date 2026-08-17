@@ -17,6 +17,7 @@
 # misc
 .DS_Store
 *.pem
+Thumbs.db
 
 # debug
 npm-debug.log*
@@ -25,6 +26,7 @@ yarn-error.log*
 
 # local env files
 .env
+.env.local
 .env*.local
 .env.development.local
 .env.test.local
@@ -45,3 +47,12 @@ next-env.d.ts
 # logs
 logs
 *.log
+
+# clerk configuration (can include secrets)
+/.clerk/
+
+# convex generated files (auto-generated, do not commit)
+/convex/_generated/
+
+# sample/seed data (contains local test data)
+sampleData.jsonl
