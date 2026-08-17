@@ -1,0 +1,4 @@
+npx --ignore-scripts=false inngest-cli@latest dev
+npx convex dev
+npm run dev
+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
