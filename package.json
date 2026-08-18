@@ -13,6 +13,7 @@
     "@ai-sdk/openai": "^4.0.42",
     "@clerk/nextjs": "^6.36.5",
     "@clerk/themes": "^2.4.57",
+    "@mendable/firecrawl-js": "^4.32.2",
     "ai": "^7.0.66",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
