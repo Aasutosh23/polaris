@@ -56,3 +56,6 @@ logs
 
 # sample/seed data (contains local test data)
 sampleData.jsonl
+
+# Sentry Config File
+.env.sentry-build-plugin
