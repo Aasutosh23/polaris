@@ -5,4 +5,4 @@ const openrouter = createOpenAI({
   baseURL: "https://openrouter.ai/api/v1",
 });
 
-export const gptOss = openrouter("openai/gpt-oss-20b:free");
+export const suggestionModel = openrouter("google/gemma-4-31b-it:free");
