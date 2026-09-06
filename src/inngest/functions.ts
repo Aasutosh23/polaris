@@ -1,6 +1,6 @@
 import { generateText } from "ai";
 import { inngest } from "./client";
-import { gptOss } from "@/lib/ai";
+import { suggestionModel } from "@/lib/ai";
 import { firecrawl } from "@/lib/firecrawl";
 
 const URL_REGEX = "/https?:\/\/[^\s]+/g";
@@ -34,8 +34,8 @@ export const demoGenerate = inngest.createFunction(
 
     const result = await step.run("generate-text", async () => {
       return await generateText({
-        model: gptOss,
-        prompt,
+        model: suggestionModel,
+        prompt: finalPrompt,
         experimental_telemetry: {
           isEnabled: true,
           recordInputs: true,
