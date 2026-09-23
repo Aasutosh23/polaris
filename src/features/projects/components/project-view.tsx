@@ -2,18 +2,17 @@
 
 import { Poppins } from "next/font/google";
 import { SparkleIcon } from "lucide-react";
+import { FaGithub } from "react-icons/fa";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
-import { FaGithub } from "react-icons/fa";
-import { adjectives, animals, colors, uniqueNamesGenerator } from "unique-names-generator";
-import { useEffect, useState } from "react";
 
 import { ProjectsList } from "./projects-list";
-import { useCreateProject } from "../hooks/use-projects";
 import { ProjectsCommandDialog } from "./projects-command-dialog";
 import { ImportGithubDialog } from "./import-github-dialog";
+import { NewProjectDialog } from "./new-project-dialog";
 
 const font = Poppins({
  subsets: ["latin"],
@@ -21,10 +20,9 @@ const font = Poppins({
 });
 
 export const ProjectsView = () => {
- const createProject = useCreateProject();
-
  const [commandDialogOpen, setCommandDialogOpen] = useState(false);
  const [importDialogOpen, setImportDialogOpen] = useState(false);
+ const [newProjectDialogOpen, setNewProjectDialogOpen] = useState(false);
 
  useEffect(() => {
   const handleKeyDown = (e: KeyboardEvent) => {
@@ -37,6 +35,10 @@ export const ProjectsView = () => {
      e.preventDefault();
      setImportDialogOpen(true);
     }
+    if (e.key === "j") {
+     e.preventDefault();
+     setNewProjectDialogOpen(true);
+    }
    }
   };
 
@@ -48,11 +50,12 @@ export const ProjectsView = () => {
   <>
    <ProjectsCommandDialog open={commandDialogOpen} onOpenChange={setCommandDialogOpen} />
    <ImportGithubDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} />
+   <NewProjectDialog open={newProjectDialogOpen} onOpenChange={setNewProjectDialogOpen} />
    <div className="min-h-screen bg-sidebar flex flex-col items-center justify-center p-6 md:p-16">
     <div className="w-full max-w-sm mx-auto flex flex-col gap-4 items-center">
      <div className="flex justify-between gap-4 w-full items-center">
       <div className="flex items-center gap-2 w-full group/logo">
-       <img src="/logo.svg" alt="Polaris" className="size-8 md:size-11.5" />
+       <img src="/logo.svg" alt="Polaris" className="size-[32px] md:size-[46px]" />
        <h1 className={cn("text-4xl md:text-5xl font-semibold", font.className)}>Polaris</h1>
       </div>
      </div>
@@ -61,23 +64,7 @@ export const ProjectsView = () => {
       <div className="grid grid-cols-2 gap-2">
        <Button
         variant="outline"
-        onClick={async () => {
-         try {
-          const projectName = uniqueNamesGenerator({
-           dictionaries: [adjectives, animals, colors],
-           separator: "-",
-           length: 3,
-          });
-
-          const projectId = await createProject({
-           name: projectName,
-          });
-
-          console.log("PROJECT CREATED:", projectId);
-         } catch (error) {
-          console.error("PROJECT CREATION FAILED:", error);
-         }
-        }}
+        onClick={() => setNewProjectDialogOpen(true)}
         className="h-full items-start justify-start p-4 bg-background border flex flex-col gap-6 rounded-none"
        >
         <div className="flex items-center justify-between w-full">
