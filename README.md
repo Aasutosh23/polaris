@@ -283,3 +283,5 @@ This project is licensed under the [MIT License](LICENSE).
 <div align="center">
 Made with ❤️ for developers who build in the browser.
 </div>
+
+Testing my own CodeRabbit AI review bot.
