@@ -2,7 +2,7 @@
 
 <img src="./public/logo.svg" width="96" height="96" alt="Polaris Logo" />
 
-# 🌌 Polaris — AI-Powered Cloud Code Editor
+# 🌌 Polaris — AI-Powered Online Cloud Code Editor
 
 **The Next-Generation In-Browser Cloud IDE with WebContainers, Multi-Model AI Copilots, and Seamless GitHub Synchronization.**
 
