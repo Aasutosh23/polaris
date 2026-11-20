@@ -2,6 +2,8 @@ import { v } from "convex/values";
 
 import { mutation, query } from "./_generated/server";
 
+import { Doc } from "./_generated/dataModel";
+
 const validateInternalKey = (key: string) => {
  const internalKey = process.env.POLARIS_CONVEX_INTERNAL_KEY;
 
@@ -161,6 +163,51 @@ export const getFileId = query({
   validateInternalKey(args.internalKey);
 
   return await ctx.db.get(args.fileId);
+ },
+});
+
+export const getFileByPath = query({
+ args: {
+  internalKey: v.string(),
+  projectId: v.id("projects"),
+  path: v.string(),
+ },
+ handler: async (ctx, args) => {
+  validateInternalKey(args.internalKey);
+
+  const files = await ctx.db
+   .query("files")
+   .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+   .collect();
+
+  const byId = new Map(files.map((f) => [f._id, f]));
+
+  const buildPath = (file: Doc<"files">) => {
+   const segments = [file.name];
+   let current = file;
+   while (current.parentId) {
+    const parent = byId.get(current.parentId);
+    if (!parent) break;
+    segments.unshift(parent.name);
+    current = parent;
+   }
+   return segments.join("/");
+  };
+
+  const wanted = args.path.replace(/^\/+/, "").trim();
+  if (!wanted) return null;
+
+  const candidates = files.filter((f) => f.type === "file");
+
+  const exact = candidates.find((f) => buildPath(f) === wanted);
+  if (exact) return exact;
+
+  return (
+   candidates.find((f) => {
+    const full = buildPath(f);
+    return full === wanted || full.endsWith("/" + wanted);
+   }) ?? null
+  );
  },
 });
 

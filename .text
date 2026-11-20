@@ -1,4 +1,0 @@
-npx --ignore-scripts=false inngest-cli@latest dev
-npx convex dev
-npm run dev
-

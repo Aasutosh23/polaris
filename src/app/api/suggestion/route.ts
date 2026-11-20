@@ -1,14 +1,14 @@
 import { generateText } from "ai";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { createOpenAI } from "@ai-sdk/openai";
+import { createOpenAI, openai } from "@ai-sdk/openai";
 
 const openrouter = createOpenAI({
-  apiKey: process.env.OPENROUTER_API_KEY,
-  baseURL: "https://openrouter.ai/api/v1",
+ apiKey: process.env.OPENROUTER_API_KEY,
+ baseURL: "https://openrouter.ai/api/v1",
 });
 
-export const suggestionModel = openrouter("minimax/minimax-m2.7:free");
+const suggestionModel = openai.chat(process.env.SUGGESTION_MODEL ?? "openrouter/free");
 
 const SUGGESTION_PROMPT = `You are an expert inline code-completion engine (like GitHub Copilot). Your ONLY job is to predict what the developer would type next at the cursor, or emit nothing if a suggestion isn't warranted.
 
@@ -55,54 +55,54 @@ Return ONLY the raw completion text to be inserted at the cursor. No prose, no f
 </output_contract>`;
 
 export async function POST(request: Request) {
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ suggestion: "" });
+ let body;
+ try {
+  body = await request.json();
+ } catch {
+  return NextResponse.json({ suggestion: "" });
+ }
+
+ try {
+  const { userId } = await auth();
+
+  if (!userId) {
+   return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
-  try {
-    const { userId } = await auth();
+  const {
+   fileName,
+   code,
+   language,
+   currentLine,
+   previousLines,
+   textBeforeCursor,
+   textAfterCursor,
+   nextLines,
+   lineNumber,
+  } = body;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
-
-    const {
-      fileName,
-      code,
-      language,
-      currentLine,
-      previousLines,
-      textBeforeCursor,
-      textAfterCursor,
-      nextLines,
-      lineNumber,
-    } = body;
-
-    if (!code) {
-      return NextResponse.json({ error: "Code is required" }, { status: 400 });
-    }
-
-    const prompt = SUGGESTION_PROMPT.replace("{fileName}", fileName || "")
-      .replace("{language}", language || "")
-      .replace("{code}", code)
-      .replace("{currentLine}", currentLine || "")
-      .replace("{previousLines}", previousLines || "")
-      .replace("{textBeforeCursor}", textBeforeCursor || "")
-      .replace("{textAfterCursor}", textAfterCursor || "")
-      .replace("{nextLines}", nextLines || "")
-      .replace("{lineNumber}", lineNumber?.toString() || "");
-
-    const { text } = await generateText({
-      model: suggestionModel,
-      prompt,
-    });
-
-    return NextResponse.json({ suggestion: text.trim() });
-  } catch (error) {
-    console.error("Suggestion error: ", error);
-    return NextResponse.json({ suggestion: "" });
+  if (!code) {
+   return NextResponse.json({ error: "Code is required" }, { status: 400 });
   }
+
+  const prompt = SUGGESTION_PROMPT.replace("{fileName}", fileName || "")
+   .replace("{language}", language || "")
+   .replace("{code}", code)
+   .replace("{currentLine}", currentLine || "")
+   .replace("{previousLines}", previousLines || "")
+   .replace("{textBeforeCursor}", textBeforeCursor || "")
+   .replace("{textAfterCursor}", textAfterCursor || "")
+   .replace("{nextLines}", nextLines || "")
+   .replace("{lineNumber}", lineNumber?.toString() || "");
+
+  const { text } = await generateText({
+   model: suggestionModel,
+   prompt,
+  });
+
+  return NextResponse.json({ suggestion: text.trim() });
+ } catch (error) {
+  console.error("Suggestion error: ", error);
+  return NextResponse.json({ suggestion: "" });
+ }
 }

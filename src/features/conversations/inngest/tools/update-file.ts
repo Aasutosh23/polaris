@@ -5,8 +5,10 @@ import { convex } from "@/lib/convex-client";
 
 import { api } from "../../../../../convex/_generated/api";
 import { Id } from "../../../../../convex/_generated/dataModel";
+import { findFile, loadProjectFiles } from "./resolve-file";
 
 interface UpdateFileToolOptions {
+ projectId: Id<"projects">;
  internalKey: string;
 }
 
@@ -15,13 +17,14 @@ const paramsSchema = z.object({
  content: z.string(),
 });
 
-export const createUpdateFileTool = ({ internalKey }: UpdateFileToolOptions) => {
+export const createUpdateFileTool = ({ projectId, internalKey }: UpdateFileToolOptions) => {
  return createTool({
   name: "updateFile",
-  description: "Update the content of an existing file",
+  description:
+   "Update the content of an existing file. Pass the file ID from listFiles (preferred) or the full path like 'src/main.tsx'.",
   parameters: z.object({
-   fileId: z.string().describe("The ID of the file to update"),
-   content: z.string().describe("The new content for the file"),
+   fileId: z.string().describe("The file ID from listFiles (preferred) or its full path"),
+   content: z.string().describe("The complete new content for the file"),
   }),
   handler: async (params, { step: toolStep }) => {
    const parsed = paramsSchema.safeParse(params);
@@ -32,28 +35,24 @@ export const createUpdateFileTool = ({ internalKey }: UpdateFileToolOptions) => 
 
    const { fileId, content } = parsed.data;
 
-   const file = await convex.query(api.system.getFileId, {
-    internalKey,
-    fileId: fileId as Id<"files">,
-   });
-
-   if (!file) {
-    return `Error: File with ID "${fileId}" not found. Use listFiles to get valid file IDs`;
-   }
-
-   if (file.type === "folder") {
-    return `Error: "${fileId}" is a folder, not a file. You can only update file contents`;
-   }
-
    try {
     return await toolStep?.run("update-file", async () => {
+     const files = await loadProjectFiles(internalKey, projectId);
+     const found = findFile(files, fileId);
+
+     if (!found.ok) return `Error: ${found.error}`;
+
+     if (found.file.type === "folder") {
+      return `Error: "${fileId}" is a folder, not a file. You can only update file contents`;
+     }
+
      await convex.mutation(api.system.updateFile, {
       internalKey,
-      fileId: fileId as Id<"files">,
+      fileId: found.file._id,
       content,
      });
 
-     return `File "${file.name}" updated successfully`;
+     return `File "${found.file.name}" updated successfully`;
     });
    } catch (error) {
     return `Error updating file: ${error instanceof Error ? error.message : "Unknown error"}`;

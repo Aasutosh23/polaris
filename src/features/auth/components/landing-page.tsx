@@ -206,7 +206,7 @@ export const LandingPage = () => {
      </div>
      <div className="flex items-center gap-2">
       <CheckCircle2 className="size-4 text-emerald-400" />
-      <span>Powered by Gemini & OpenAI</span>
+      <span>Powered by OpenRouter</span>
      </div>
      <div className="flex items-center gap-2">
       <CheckCircle2 className="size-4 text-emerald-400" />
@@ -597,11 +597,11 @@ export const LandingPage = () => {
        <Sparkles className="size-6" />
       </div>
       <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
-       Multi-Model AI Coding Assistant
+       OpenRouter AI Coding Assistant
       </h3>
       <p className="text-zinc-400 text-sm sm:text-base max-w-xl leading-relaxed mb-6">
        Prompt Polaris to scaffold whole projects, refactor components, build database schemas, or
-       troubleshoot errors. Powered by Google Gemini and OpenAI reasoning models with full
+       troubleshoot errors. Powered by OpenRouter models with full
        repository context.
       </p>
       <div className="flex flex-wrap gap-2 text-xs font-mono">
@@ -703,7 +703,7 @@ export const LandingPage = () => {
       </div>
       <div className="flex items-center gap-2.5 font-medium hover:text-white transition">
        <span className="size-3 rounded-full bg-purple-500" />
-       <span>Google Gemini AI</span>
+       <span>OpenRouter AI</span>
       </div>
      </div>
     </div>

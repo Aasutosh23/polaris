@@ -41,7 +41,7 @@ Supercharged by **multi-model AI agents**, **Inngest Agent Kit**, **Firecrawl we
 - **Prompt-to-Project Generation**: Turn plain English specifications into structured projects with scaffolding, files, and dependencies automatically created.
 - **Surgical Quick-Edit Mode**: Select any code snippet and apply precise, context-aware diff modifications without altering surrounding logic or formatting.
 - **Context-Aware Docs Scraping (Firecrawl)**: Automatically detects documentation URLs in user prompts, scrapes live Markdown documentation, and grounds LLM responses with real-time API context.
-- **Multi-Model Orchestration**: Powered by the Vercel AI SDK, with configurable models across Google Gemini and OpenRouter (MiniMax, Claude, GPT-4o).
+- **OpenRouter AI**: Powered by the Vercel AI SDK, using OpenRouter for coding agents, code completions, and quick edits.
 - **Background Agent Execution (Inngest)**: Durable, step-based AI tasks with automatic retries, cancellation, and progress streaming.
 
 ### ⚡ Real-Time Collaboration & Persistence
@@ -72,7 +72,7 @@ Supercharged by **multi-model AI agents**, **Inngest Agent Kit**, **Firecrawl we
 | **Database & Realtime** | [Convex](https://www.convex.dev/) |
 | **Authentication** | [Clerk](https://clerk.com/) (OAuth, GitHub provider, session management) |
 | **AI Workflows** | [Vercel AI SDK](https://sdk.vercel.ai/), [Inngest](https://www.inngest.com/) Agent Kit |
-| **AI Models** | Google Gemini (`@ai-sdk/google`), OpenRouter (`@ai-sdk/openai`) |
+| **AI Models** | OpenRouter (`@ai-sdk/openai`) |
 | **Web Scraping** | [Firecrawl](https://firecrawl.dev/) (`@mendable/firecrawl-js`) |
 | **GitHub API** | [Octokit](https://github.com/octokit/octokit.js) |
 | **Monitoring** | [Sentry](https://sentry.io/) (Next.js client, server, and edge tracing) |
@@ -101,7 +101,7 @@ flowchart TD
         Auth["Clerk Auth & GitHub OAuth"]
         DB["Convex Realtime DB (Projects, Files, Chats)"]
         Inn["Inngest Workflow Engine"]
-        AI["Vercel AI SDK (Gemini / OpenRouter)"]
+        AI["Vercel AI SDK (OpenRouter)"]
         FC["Firecrawl Docs Scraping"]
     end
 
@@ -124,7 +124,7 @@ Before running Polaris locally, ensure you have:
 - Accounts for third-party services:
   - [Clerk Account](https://clerk.com) for authentication & GitHub OAuth
   - [Convex Account](https://convex.dev) for realtime data storage
-  - [Google AI Studio](https://aistudio.google.com/) or [OpenRouter](https://openrouter.ai/) for AI model access
+  - [OpenRouter](https://openrouter.ai/) for AI model access
   - [Firecrawl](https://firecrawl.dev/) for context web scraping
   - [Inngest Account](https://inngest.com) (or local Inngest Dev Server)
 
@@ -201,8 +201,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to start cod
 | `NEXT_PUBLIC_CONVEX_URL` | Convex cloud endpoint URL | Convex Project Settings |
 | `NEXT_PUBLIC_CONVEX_SITE_URL` | Convex HTTP actions endpoint | Convex Project Settings |
 | `POLARIS_CONVEX_INTERNAL_KEY` | Secret token to authenticate internal API routes with Convex | Custom secure string |
-| `GOOGLE_GENERATIVE_AI_API_KEY` | Google Gemini API key for AI coding agents | [Google AI Studio](https://aistudio.google.com) |
-| `OPENROUTER_API_KEY` | OpenRouter API Key for multi-model LLM generation | [OpenRouter](https://openrouter.ai) |
+| `OPENROUTER_API_KEY` | OpenRouter API key for AI coding agents, completions, and quick edits | [OpenRouter](https://openrouter.ai) |
 | `FIRECRAWL_API_KEY` | Firecrawl API Key to scrape and parse documentation URLs | [Firecrawl](https://firecrawl.dev) |
 | `INNGEST_DEV` | Enable local Inngest development mode (`true` / `false`) | Local config |
 | `SENTRY_AUTH_TOKEN` | (Optional) Sentry build and source map token | [Sentry](https://sentry.io) |

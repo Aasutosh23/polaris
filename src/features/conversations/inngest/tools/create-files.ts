@@ -5,6 +5,7 @@ import { convex } from "@/lib/convex-client";
 
 import { api } from "../../../../../convex/_generated/api";
 import { Id } from "../../../../../convex/_generated/dataModel";
+import { loadProjectFiles, resolveParent } from "./resolve-file";
 
 interface CreateFilesToolOptions {
  projectId: Id<"projects">;
@@ -22,17 +23,17 @@ export const createCreateFilesTool = ({ projectId, internalKey }: CreateFilesToo
  return createTool({
   name: "createFiles",
   description:
-   "Create multiple files at once in the same folder. Use this to batch create files that share the same parent folder. More efficient than creating files one by one.",
+   "Create multiple files at once in the same folder. More efficient than creating files one by one. File names must be plain names with no '/'.",
   parameters: z.object({
    parentId: z
     .string()
     .describe(
-     "The ID of the parent folder. Use empty string for root level. Must be a valid folder ID from listFiles."
+     "The ID of the parent folder from listFiles or createFolder. Use empty string for root level."
     ),
    files: z
     .array(
      z.object({
-      name: z.string().describe("The file name including extension"),
+      name: z.string().describe("The plain file name including extension, e.g. 'App.tsx'"),
       content: z.string().describe("The file content"),
      })
     )
@@ -47,32 +48,22 @@ export const createCreateFilesTool = ({ projectId, internalKey }: CreateFilesToo
 
    const { parentId, files } = parsed.data;
 
+   const badName = files.find((f) => f.name.includes("/"));
+   if (badName) {
+    return `Error: "${badName.name}" contains "/". Create the folder first, then create the file inside it using the folder's ID as parentId.`;
+   }
+
    try {
     return await toolStep?.run("create-files", async () => {
-     let resolvedParentId: Id<"files"> | undefined;
+     const existing = await loadProjectFiles(internalKey, projectId);
+     const parent = resolveParent(existing, parentId);
 
-     if (parentId && parentId !== "") {
-      try {
-       resolvedParentId = parentId as Id<"files">;
-       const parentFolder = await convex.query(api.system.getFileId, {
-        internalKey,
-        fileId: resolvedParentId,
-       });
-       if (!parentFolder) {
-        return `Error: Parent folder with ID "${parentId}" not found. Use listFiles to get valid folder IDs.`;
-       }
-       if (parentFolder.type !== "folder") {
-        return `Error: The ID "${parentId}" is a file, not a folder. Use a folder ID as parentId.`;
-       }
-      } catch (error) {
-       return `Error: Invalid parentId "${parentId}". Use listFiles to get valid folder IDs, or use empty string for root level.`;
-      }
-     }
+     if (!parent.ok) return `Error: ${parent.error}`;
 
      const results = await convex.mutation(api.system.createFiles, {
       internalKey,
       projectId,
-      parentId: resolvedParentId,
+      parentId: parent.parentId,
       files,
      });
 
@@ -81,7 +72,7 @@ export const createCreateFilesTool = ({ projectId, internalKey }: CreateFilesToo
 
      let response = `Created ${created.length} file(s)`;
      if (created.length > 0) {
-      response += `:${created.map((r) => r.name).join(", ")}`;
+      response += `: ${created.map((r) => r.name).join(", ")}`;
      }
      if (failed.length > 0) {
       response += `. Failed: ${failed.map((r) => `${r.name} (${r.error})`).join(", ")}`;

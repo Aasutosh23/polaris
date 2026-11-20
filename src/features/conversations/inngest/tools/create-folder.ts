@@ -5,6 +5,7 @@ import { convex } from "@/lib/convex-client";
 
 import { api } from "../../../../../convex/_generated/api";
 import { Id } from "../../../../../convex/_generated/dataModel";
+import { loadProjectFiles, resolveParent } from "./resolve-file";
 
 interface CreateFolderToolOptions {
  projectId: Id<"projects">;
@@ -19,14 +20,12 @@ const paramsSchema = z.object({
 export const createCreateFolderTool = ({ projectId, internalKey }: CreateFolderToolOptions) => {
  return createTool({
   name: "createFolder",
-  description: "Create a new folder in the project",
+  description: "Create a new folder in the project. The name must be a plain name with no '/'.",
   parameters: z.object({
-   name: z.string().describe("The name of the folder to create"),
+   name: z.string().describe("The plain name of the folder to create, e.g. 'src'"),
    parentId: z
     .string()
-    .describe(
-     "The ID (not name!) of the parent folder from listFiles, or empty string for root level"
-    ),
+    .describe("The ID of the parent folder from listFiles, or empty string for root level"),
   }),
   handler: async (params, { step: toolStep }) => {
    const parsed = paramsSchema.safeParse(params);
@@ -37,33 +36,22 @@ export const createCreateFolderTool = ({ projectId, internalKey }: CreateFolderT
 
    const { name, parentId } = parsed.data;
 
+   if (name.includes("/")) {
+    return `Error: Folder name must not contain "/". Create nested folders one level at a time.`;
+   }
+
    try {
     return await toolStep?.run("create-folder", async () => {
-     let resolvedParentId: Id<"files"> | undefined;
+     const existing = await loadProjectFiles(internalKey, projectId);
+     const parent = resolveParent(existing, parentId);
 
-     if (parentId && parentId !== "") {
-      try {
-       resolvedParentId = parentId as Id<"files">;
-       const parentFolder = await convex.query(api.system.getFileId, {
-        internalKey,
-        fileId: resolvedParentId,
-       });
-       if (!parentFolder) {
-        return `Error: Parent folder with ID "${parentId}" not found. Use listFiles to get valid folder IDs.`;
-       }
-       if (parentFolder.type !== "folder") {
-        return `Error: The ID "${parentId}" is a file, not a folder. Use a folder ID as parentId.`;
-       }
-      } catch (error) {
-       return `Error: Invalid parentId "${parentId}". Use listFiles to get valid folder IDs, or use empty string for root level.`;
-      }
-     }
+     if (!parent.ok) return `Error: ${parent.error}`;
 
      const folderId = await convex.mutation(api.system.createFolder, {
       internalKey,
       projectId,
       name,
-      parentId: parentId ? (parentId as Id<"files">) : undefined,
+      parentId: parent.parentId,
      });
 
      return `Folder created with ID: ${folderId}`;

@@ -152,12 +152,12 @@ Respond ONLY to the user's new message below. Do not repeat or reference your pr
    model: codingModel,
    tools: [
     createListFilesTool({ projectId, internalKey }),
-    createReadFilesTool({ internalKey }),
-    createUpdateFileTool({ internalKey }),
+    createReadFilesTool({ projectId, internalKey }),
+    createUpdateFileTool({ projectId, internalKey }),
     createCreateFilesTool({ projectId, internalKey }),
     createCreateFolderTool({ projectId, internalKey }),
-    createRenameFileTool({ internalKey }),
-    createDeleteFilesTool({ internalKey }),
+    createRenameFileTool({ projectId, internalKey }),
+    createDeleteFilesTool({ projectId, internalKey }),
     createScrapeUrlsTool(),
    ],
   });
